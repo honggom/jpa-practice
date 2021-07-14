@@ -88,11 +88,96 @@ public class User {
 - 다중성 : 다대일(N:1), 일대다(1:N), 일대일(1:1), 다대다(N:N)
 
 ## JPA 연관 관계 어노테이션
+    ```java
+    @Entity
+    @NoArgsConstructor
+    @Data
+    @ToString(callSuper = true)
+    @EqualsAndHashCode(callSuper = true)
+    public class Book extends BaseEntity {
+    
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long id;
+    
+        private String name;
+    
+        private String category;
+    
+        private Long authorId;
+    
+        //private Long publisherId;
+    
+        @OneToOne(mappedBy = "book")
+        @ToString.Exclude
+        private BookReviewInfo bookReviewInfo;
+    
+        @OneToMany
+        @JoinColumn(name = "book_id")
+        @ToString.Exclude
+        private List<Review> reviews;
+    
+        @ManyToOne
+        @ToString.Exclude
+        private Publisher publisher;
+    }
+    ```
 - @OneToOne : 1:1 관계를 정의
+  ```
+  위 코드 @OneToOne에서 옵션으로 
+  (mappedBy = {해당 클래스})가 정의되어 있는데,
+  해당 옵션이 의미하는 바는 Book와 BookReviewInfo끼리 1:1 관계를 형성하되,
+  Book에 Foreign Key를 정의하지 않겠다는 의미이다.
+  ```
 - @OneToMany : 1:N 관계를 정의
+  ```
+  위 코드에서 @JoinColumn(name = "book_id")가 의미하는 것은
+  우선 1:N 관계 중 1이 Book을 의미하고 N은 Review를 의미하는데,
+  1:N 관계를 표현하기 위해 RDB 상에서는 Review 측에 Foreign Key가 필요한데
+  JPA에서 해당 Foreign Key를 "book_id"로 네이밍하고 연관 관계를 짓겠다는 의미이다.
+  ```
 - @ManyToOne : N:1 관계를 정의
 - @ManyToMany : N:N 관계를 정의
-- 옵션 (mappedBy = {해당 클래스}) : 해당 테이블 정의시 참조키를 정의 하지 않음  
+  ```
+  기본적으로 N:N 관계는 실무에서 잘 사용하지 않음
+  ```
+### application.yml 설정
+    hibernate:
+      ddl-auto: 설정값
+      #none : ddl을 실행 안 함
+      #create : drop 후 create
+      #create-drop : create 후 종료 시 drop
+      #update : 실제 스키마와 비교하여 변경된 부분만 반영
+      #validate : 단순 비교작업만 하고 Entity와 실제 스키마가 다르면 오류를 발생시킴
+- generate-ddl, ddl-auto의 차이
+  - generate-ddl : jpa의 하위 속성, 구현체와 상관없이 자동화된 ddl을 사용할 수 있게 해줌 (false가 default)
+  - ddl-auto : ddl-auto가 설정되면 generate-ddl 옵션은 무시됨
+## 영속성 컨텍스트 (Persistence Context)
+    Entity를 관리하는 컨테이너
+- 영속성 캐시 : 영속성 컨텍스트가 지닌 캐시
+    - 영속성 캐시가 flush 돼서 DB에 반영되는 시점 :
+      1. flush()를 명시적으로 사용하는 시점
+      2. 트랜잭션이 끝나서 해당 쿼리가 커밋되는 시점
+      3. 복잡한 조회 조건에 jpql 쿼리가 실행되는 시점 
+- Repository.flush() : 영속성 캐시에 쌓여서 아직 반영되지 않은 Entity의 변경을 해당 시점에 모두 반영시킴
+- Jpa의 save()를 통해 명시적으로 Entity의 변화를 DB에 적용시킬 수 있지만 save()를 명시하지
+않더라고 트랜잭션이 종료되면 Entity의 변경 내용이 커밋(flush)됨
+  
+## 영속 상태
+- 영속 (managed) : EntityManager가 Entity를 관리하는 상태 / 영속성 컨텍스트에 Entity가 저장된 상태
+- 준영속 (detached) : EntityManager가 Entity를 관리하지 않는 상태 / 영속성 컨텍스트에 저장되었다가 분리된 상태 
+- 비영속 (new) : DB와 관련이 없는 순수 Java Object 상태 / 영속성 컨텍스트와 관련이 없는 상태
+
+## 영속 상태 조작 
+- @Trasient : 해당 필드는 영속화에서 제외됨, 영속성 컨텍스트에서 관리를 안 한다.
+- EntityManager.persist(target) : target을 영속화(managed 상태)한다.
+- EntityManager.detach(target) : target을 준영속화(detached 상태)한다.
+- EntityManager.merge(target) : 준영속화(detached 상태)된 target을 다시 영속화(managed 상태) 한다.
+- EntityManager.remove(target) : target을 삭제한다.
+
+## EntityManager
+    쿼리메서드나 SimpleJpaRepository의 내부적인 실제 동작은 EntityManager에의해 동작한다.
+
 
 
 
