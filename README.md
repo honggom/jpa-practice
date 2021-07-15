@@ -178,9 +178,80 @@ public class User {
 ## EntityManager
     쿼리메서드나 SimpleJpaRepository의 내부적인 실제 동작은 EntityManager에의해 동작한다.
 
+## 영속성 전이 (Cascade)
+```java
+@Entity
+@NoArgsConstructor
+@Data
+@ToString(callSuper = true)
+@EqualsAndHashCode(callSuper = true)
+public class Book extends BaseEntity {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+
+    private String category;
+
+    private Long authorId;
+
+    //private Long publisherId;
+
+    @OneToOne(mappedBy = "book")
+    @ToString.Exclude
+    private BookReviewInfo bookReviewInfo;
+
+    @OneToMany
+    @JoinColumn(name = "book_id")
+    @ToString.Exclude
+    private List<Review> reviews;
+
+    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ToString.Exclude
+    private Publisher publisher;
+```
+- ex) 위 코드에서 @ManyToOne(cascade = CascadeType.PERSIST) 의미하는 바는 Book 입장에서
+Publisher가 Persist(Insert)될 떄 영속성을 전이시키겠다는 의미, 다른 동작(update, delete 등)에서는
+동작을 안 한다.
 
 
+## Transaction
+- Transaction내에서 RuntimeException(UnChecked)이 발생하면 Roll Back
+- Transaction내에서 Checked Exception이 발생하면 Roll Back이 발생하지 않음
+  - Checked Exception은 전적으로 개발자 책임으로 간주
+  - 만약 Checked Exception이 발생시 Roll Back를 발생시키길 원하면
+    ```java
+    @Transactional(rollbackFor = Exception.class)
+    ```
+    위 어노테이션을 사용하면 됨
+- @Transactional 어노테이션이 붙은 함수를 직접 사용하지 않고 해당 함수를 콜해서 사용하면 @Transactional이 무시됨
 
+### Transaction 격리 (Isolation) 단계
+- @Transactional(isolation = Isolation.READ_UNCOMMITTED)
+  - 커밋이 안 된 데이터도 읽을 수 있음, 데이터를 읽을 수 있는
+    이유가 jpa를 통해 Entity를 update하기 때문에 해당 Transaciton사이에서 Entity 자체는 실제로 update가 된 상태가 된다. 
+    따라서 데이터 변질이 될 가능성이 높음 사용시 많은 주의가 필요하다.
+- @Transactional(isolation = Isolation.READ_COMMITTED)
+  - 커밋된 데이터만 읽는다.
+- @Transactional(isolation = Isolation.REPEATABLE_READ)
+  - UNREPEATABLE_READ 상태 : 반복된 조회 등으로 인해 예상되는 값이 변경되어 예상치 못한 값이 조회되는 상태
+  - REPEATABLE_READ : 반복해서 값을 조회해도 항상 동일한 값이 리턴되는 것을 보장한다.
+- @Transactional(isolation = Isolation.SERIALIZABLE)
+  - phantom read를 방지하기 위해 사용
+  - 다른쪽 Transaction이 commit돼야 다음 로직이 실행됨
 
+### Transaction 전파 (Propagation) 단계
+- @Transactional(propagation = Propagation.REQUIRED) (DEFAULT) : @Transactional의 기본값으로 트랜잭션이 있으면 그 트랜잭션을 사용하고 없으면 트랜잭션을 만들어서 사용한다.
+jpa의 save 메서드도 @Transactional 어노테이션이 선언되어 있는데 따라서 해당 save 메서드는 각 save 메서드마다 트랜잭션을 가지고 있다. 
+- @Transactional(propagation = Propagation.REQUIRES_NEW) : 트랜잭션을 별도로 만들어서 사용한다.
+- @Transactional(propagation = Propagation.NESTED) : 상위 트랜잭션에 종속 적이지만 NESTED 트랜잭션은 상위에 영향을 주지 않는다.
+- @Transactional(propagation = Propagation.SUPPORTS) : 상위 트랜잭션이 있으면 그 트랜잭션을 사용하고, 없다면 트랜잭션 없이 동작한다.
+- @Transactional(propagation = Propagation.NOT_SUPPORTED) : 상위 트랜잭션이 있고 해당 트랜잭션에 접근하면 작업을 멈추고 상위 트랜잭션이 끝나면 동작한다.
+- @Transactional(propagation = Propagation.MANDATORY) : 필수적으로 상위 트랜잭션이 있어야 된다. 없다면 오류를 발생시킨다.
+- @Transactional(propagation = Propagation.NEVER) : 상위 트랙잭션이 없어야 된다. 있다면 오류를 발생시킨다.
 
-
+### Transaction 스코프
+- 메서드 : 메서드의 시작과 끝, 우선순위가 더 높음 (ex : 메서드의 트랜잭션이 있고 해당 메서드의 클래스에 트랜잭션이 있으면 메서드의 트랜잭션만 동작)
+- 클래스 : 각 메서드의 시작과 끝

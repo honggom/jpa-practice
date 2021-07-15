@@ -37,7 +37,7 @@ public class Book extends BaseEntity {
     @ToString.Exclude
     private List<Review> reviews;
 
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @ToString.Exclude
     private Publisher publisher;
 

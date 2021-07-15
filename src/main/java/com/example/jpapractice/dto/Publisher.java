@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,6 +24,11 @@ public class Publisher extends BaseEntity{
 
     @OneToMany
     @JoinColumn(name = "publisher_id")
-    private List<Book> books;
+    @ToString.Exclude
+    private List<Book> books = new ArrayList<>();
+
+    public void addBook(Book book){
+        this.books.add(book);
+    }
 
 }
