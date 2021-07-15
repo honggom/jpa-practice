@@ -215,7 +215,35 @@ public class Book extends BaseEntity {
 - ex) 위 코드에서 @ManyToOne(cascade = CascadeType.PERSIST) 의미하는 바는 Book 입장에서
 Publisher가 Persist(Insert)될 떄 영속성을 전이시키겠다는 의미, 다른 동작(update, delete 등)에서는
 동작을 안 한다.
+  
+## OrphanRemoval (고아 제거)
+    연관관계가 없는 Entity를 삭제한다.
+    ex) Book dto에 필드 변수로 Publisher publisher이 있다.
+        Book와 Publisher는 서로 연관을 지을 수 있음
+- @OneToMany(orphanRemoval = true)
+```java
+@OneToMany(orphanRemoval = true)
+@JoinColumn(name = "publisher_id")
+@ToString.Exclude
+private List<Book> books = new ArrayList<>();
+```
+<br>
+- setter에 null을 주입하면?
 
+```java
+// .. jpa를 통해 Book Entity에 Publisher가 주입되어 있다고 가정
+book.setPublisher(null);
+bookRepository.save(book);
+```
+위와 같이 하면 연관관계는 제거 되지만, publisher는 존재함
+
+## 커스텀 쿼리
+    JPA의 쿼리 메서드의 네이밍 특징 때문에 경우에 따라 매우긴 이름의 쿼리 메서드를 
+    정의해야 하는 경우가 생기는데, 이때 이런 점을 해결하고자 커스텀 쿼리를 사용할 수 있다.
+- @Query 어노테이션을 Repository에 Method에 붙여서 사용
+
+## Converter
+    DB의 레코드를 자바객체로 Convert 해줌 필요할 때 찾아보기..
 
 ## Transaction
 - Transaction내에서 RuntimeException(UnChecked)이 발생하면 Roll Back
