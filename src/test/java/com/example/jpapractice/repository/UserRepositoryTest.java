@@ -1,5 +1,6 @@
 package com.example.jpapractice.repository;
 
+import com.example.jpapractice.dto.Address;
 import com.example.jpapractice.dto.Gender;
 import com.example.jpapractice.dto.User;
 import com.example.jpapractice.dto.UserHistory;
@@ -359,6 +360,19 @@ class UserRepositoryTest {
         userHistories.forEach(System.out::println);
 
         System.out.println("UserHistory.getUser() : "+userHistoryRepository.findAll().get(0).getUser());
+    }
+
+    @Test
+    void embedTest() {
+        userRepository.findAll().forEach(System.out::println);
+        User user = new User();
+        user.setName("steve");
+        user.setHomeAddress(new Address("대전광역시", "동구", "용전동 168-16", "34544"));
+        user.setCompanyAddress(new Address("서울광역시", "관악구", "신림동 493-17", "102호"));
+
+        userRepository.save(user);
+
+        userRepository.findAll().forEach(System.out::println);
     }
 
 }

@@ -245,6 +245,78 @@ bookRepository.save(book);
 ## Converter
     DB의 레코드를 자바객체로 Convert 해줌 필요할 때 찾아보기..
 
+## Embedded, Embeddable
+    DTO를 가독성 있게, 자바스럽게 분리 할 수 있게 해주는 기능
+```java
+@Entity
+@...
+public class User extends BaseEntity {
+
+  @Id...
+
+  @NonNull
+  private String name;
+
+  @NonNull
+  private String email;
+  
+  @Embedded
+  @AttributeOverrides({
+          @AttributeOverride(name = "city", column = @Column(name = "home_city")),
+          @AttributeOverride(name = "district", column = @Column(name = "home_district")),
+          @AttributeOverride(name = "detail", column = @Column(name = "home_address_detail")),
+          @AttributeOverride(name = "zipCode", column = @Column(name = "home_zip_code"))
+  })
+  private Address homeAddress;
+
+  @Embedded
+  @AttributeOverrides({
+          @AttributeOverride(name = "city", column = @Column(name = "company_city")),
+          @AttributeOverride(name = "district", column = @Column(name = "company_district")),
+          @AttributeOverride(name = "detail", column = @Column(name = "company_address_detail")),
+          @AttributeOverride(name = "zipCode", column = @Column(name = "company_zip_code"))
+  })
+  private Address companyAddress;
+}
+//******************************************************************************************
+@Embeddable
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+public class Address {
+
+  private String city;
+
+  private String district;
+
+  @Column(name = "address_detail")
+  private String detail;
+
+  private String zipCode;
+}
+```
+위와 같이 Emded 기능을 사용하면 jpa가 아래와 같은 ddl을 정의함   
+좀 더 자바스럽게(oop 스럽게) DB를 컨트롤 할 수 있고, 가독성이 높다.
+```mysql
+    create table user (
+       id bigint not null auto_increment,
+        created_at datetime,
+        updated_at datetime,
+        company_city varchar(255),
+        company_address_detail varchar(255),
+        company_district varchar(255),
+        company_zip_code varchar(255),
+        email varchar(255),
+        gender varchar(255),
+        home_city varchar(255),
+        home_address_detail varchar(255),
+        home_district varchar(255),
+        home_zip_code varchar(255),
+        name varchar(255),
+        primary key (id)
+    ) engine=InnoDB
+```
+
 ## Transaction
 - Transaction내에서 RuntimeException(UnChecked)이 발생하면 Roll Back
 - Transaction내에서 Checked Exception이 발생하면 Roll Back이 발생하지 않음
