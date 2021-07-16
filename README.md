@@ -298,23 +298,23 @@ public class Address {
 위와 같이 Emded 기능을 사용하면 jpa가 아래와 같은 ddl을 정의함   
 좀 더 자바스럽게(oop 스럽게) DB를 컨트롤 할 수 있고, 가독성이 높다.
 ```mysql
-    create table user (
-       id bigint not null auto_increment,
-        created_at datetime,
-        updated_at datetime,
-        company_city varchar(255),
-        company_address_detail varchar(255),
-        company_district varchar(255),
-        company_zip_code varchar(255),
-        email varchar(255),
-        gender varchar(255),
-        home_city varchar(255),
-        home_address_detail varchar(255),
-        home_district varchar(255),
-        home_zip_code varchar(255),
-        name varchar(255),
-        primary key (id)
-    ) engine=InnoDB
+create table user (
+  id bigint not null auto_increment,
+  created_at datetime,
+  updated_at datetime,
+  company_city varchar(255),
+  company_address_detail varchar(255),
+  company_district varchar(255),
+  company_zip_code varchar(255),
+  email varchar(255),
+  gender varchar(255),
+  home_city varchar(255),
+  home_address_detail varchar(255),
+  home_district varchar(255),
+  home_zip_code varchar(255),
+  name varchar(255),
+  primary key (id)
+)engine=InnoDB
 ```
 
 ## Transaction
