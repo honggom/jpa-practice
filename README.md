@@ -1,4 +1,4 @@
-## ORM (Object-Relation Mapping / 객체 관계 매핑)
+## ORM (Object-Relational Mapping / 객체 관계 매핑)
     ORM은 결국 자바 객체와 디비 레코드와의 연결 관계를 맺어주는 것이므로 최종 동작하는 것은 쿼리문이다.
 - 객체를 통해 간접적으로 디비 데이터를 다룬다.
 - 객체와 디비의 데이터를 자동으로 매핑해준다.
