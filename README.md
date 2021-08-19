@@ -355,3 +355,14 @@ jpa의 save 메서드도 @Transactional 어노테이션이 선언되어 있는�
 ### Transaction 스코프
 - 메서드 : 메서드의 시작과 끝, 우선순위가 더 높음 (ex : 메서드의 트랜잭션이 있고 해당 메서드의 클래스에 트랜잭션이 있으면 메서드의 트랜잭션만 동작)
 - 클래스 : 각 메서드의 시작과 끝
+
+## Entity, DTO 분리의 필요성
+Entity를 Repository 뿐만 아니라 Service, Controller 영역까지 사용하면 여러 문제가 발생할 수 있다.
+- DB 설계와 동일한 객체를 화면에 공개하게 된다.
+- Entity 클래스는 모델링 코드와 연관관계를 위한 코드만 가지고 있는 것이 바람직한데, 여러 로직에 대응하기 위해 클래스가 복잡해 질 수 있다.
+- API와 Entity사이에 의존성이 생기게 된다.
+- 순환참조 문제가 발생한다.
+- 서비스 객체의 입장에서 인자로 넘어온 Entity가 영속화 상태라는 것을 보장할 수 없다.
+
+따라서 DB Layer에는 Entity를, View Layer에는 DTO를 사용하는 것이 대부분의 상황에서 바람직하다.
+- Client <--DTO--> Controller <--DTO--> Service <--Entity--> Repository <--Entity--> DB  
