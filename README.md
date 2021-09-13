@@ -88,7 +88,7 @@ public class User {
 - 다중성 : 다대일(N:1), 일대다(1:N), 일대일(1:1), 다대다(N:N)
 
 ## JPA 연관 관계 어노테이션
-    ```java
+```java
     @Entity
     @NoArgsConstructor
     @Data
@@ -121,7 +121,7 @@ public class User {
         @ToString.Exclude
         private Publisher publisher;
     }
-    ```
+```
 - @OneToOne : 1:1 관계를 정의
   ```
   위 코드 @OneToOne에서 옵션으로 
